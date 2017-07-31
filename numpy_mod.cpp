@@ -4,7 +4,7 @@
 
 namespace py = pybind11;
 
-double dot_product(py::buffer a, py::buffer b)
+double dot_product(py::array a, py::array b)
 {
     py::buffer_info a_info = a.request(); 
     py::buffer_info b_info = b.request(); 
@@ -35,7 +35,7 @@ double dot_product(py::buffer a, py::buffer b)
 }
 
 
-py::array dgemm(double alpha, py::buffer a, py::buffer b)
+py::array dgemm(double alpha, py::array a, py::array b)
 {
     py::buffer_info a_info = a.request(); 
     py::buffer_info b_info = b.request(); 
@@ -52,7 +52,7 @@ py::array dgemm(double alpha, py::buffer a, py::buffer b)
     size_t c_nrows = a_info.shape[0];
     size_t c_ncols = b_info.shape[1];
     size_t n_k = a_info.shape[1]; 
-    double * c_data = new double[c_nrows * c_ncols];
+    std::vector<double> c_data(c_nrows * c_ncols);
 
     const double * a_data = static_cast<double *>(a_info.ptr);
     const double * b_data = static_cast<double *>(b_info.ptr);
@@ -70,7 +70,7 @@ py::array dgemm(double alpha, py::buffer a, py::buffer b)
 
     // create a new buffer
     py::buffer_info c_info = {
-        c_data,           // pointer to the data we just allocated
+        c_data.data(),    // pointer to the data we just allocated
         sizeof(double),   // size of a single element
         py::format_descriptor<double>::format(), // type of data held
         2,                // number of dimensions (2 = matrix)
