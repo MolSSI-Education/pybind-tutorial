@@ -1,10 +1,10 @@
-This is a quick test of your setup.
------------------------------------
+Examples of using Pybind11
+==========================
 
-************************************************
-Make sure that you are within the
-Software Summer School (sss) conda environment!
-************************************************
+Written for the MolSSI Software Summer School 2017
+
+WARNING: Make sure that you are within the
+         Software Summer School (sss) conda environment!
 
 1.) Make a subdirectory for building (common practice) and change into it
 
