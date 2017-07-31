@@ -4,7 +4,7 @@
 
 namespace py = pybind11;
 
-double dot_product(py::array a, py::array b)
+double dot_product(py::array_t<double> a, py::array_t<double> b)
 {
     py::buffer_info a_info = a.request(); 
     py::buffer_info b_info = b.request(); 
@@ -25,17 +25,19 @@ double dot_product(py::array a, py::array b)
 
     size_t len = a_info.shape[0];
 
-    const double * a_data = static_cast<double *>(a_info.ptr);
-    const double * b_data = static_cast<double *>(b_info.ptr);
+    const double * a_data = a.data();
+    const double * b_data = b.data();
+    size_t a_stride = a_info.strides[0] / sizeof(double);
+    size_t b_stride = b_info.strides[0] / sizeof(double);
 
     for(size_t i = 0; i < len; i++)
-        dot_prod += a_data[i] * b_data[i];
+        dot_prod += a_data[i*a_stride] * b_data[i*b_stride];
 
     return dot_prod;
 }
 
 
-py::array dgemm(double alpha, py::array a, py::array b)
+py::array_t<double> dgemm(double alpha, py::array_t<double> a, py::array_t<double> b)
 {
     py::buffer_info a_info = a.request(); 
     py::buffer_info b_info = b.request(); 
@@ -54,8 +56,18 @@ py::array dgemm(double alpha, py::array a, py::array b)
     size_t n_k = a_info.shape[1]; 
     std::vector<double> c_data(c_nrows * c_ncols);
 
-    const double * a_data = static_cast<double *>(a_info.ptr);
-    const double * b_data = static_cast<double *>(b_info.ptr);
+    const double * a_data = a.data();
+    const double * b_data = b.data();
+
+    // Data may not be stored in strict row-major order
+    // so we use the strides from the buffer info
+    // The strides are stored as number of bytes, so convert that to number
+    // of doubles
+    // We are specifying that C is stored in row-major order
+    const size_t a_stride_row = a_info.strides[0] / sizeof(double);
+    const size_t a_stride_col = a_info.strides[1] / sizeof(double);
+    const size_t b_stride_row = b_info.strides[0] / sizeof(double);
+    const size_t b_stride_col = b_info.strides[1] / sizeof(double);
 
     // perform the gemm
     for(size_t i = 0; i < c_nrows; i++)
@@ -63,7 +75,8 @@ py::array dgemm(double alpha, py::array a, py::array b)
     {
         double value = 0.0;
         for(size_t k = 0; k < n_k; k++)
-            value += a_data[i*n_k + k] * b_data[k*c_ncols + j];
+            value += a_data[i*a_stride_row + k*a_stride_col]
+                   * b_data[k*b_stride_row + j*b_stride_col];
  
         c_data[i*c_ncols+j] = value * alpha;
     }
