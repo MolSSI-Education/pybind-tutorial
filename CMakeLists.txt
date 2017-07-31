@@ -20,7 +20,7 @@ find_package(pybind11 CONFIG REQUIRED
 message(STATUS "Found pybind11: ${pybind11_CONFIG}")
 
 # Creates a python module named "basic_mod"
-pybind11_add_module(basic_mod MODULE basic_mod.cpp)
+pybind11_add_module(basic_mod MODULE NO_EXTRAS basic_mod.cpp)
 
 # Creates a python module named "numpy_mod"
-pybind11_add_module(numpy_mod MODULE numpy_mod.cpp)
+pybind11_add_module(numpy_mod MODULE NO_EXTRAS numpy_mod.cpp)
